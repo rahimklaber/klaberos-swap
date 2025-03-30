@@ -26,3 +26,8 @@ Your app is ready to be deployed!
 ## Deployment
 
 Learn more about deploying your application with the [documentations](https://vite.dev/guide/static-deploy.html)
+
+## Experience working on this
+- I found a bug where the bindings don't work with Options: https://github.com/stellar/js-stellar-sdk/issues/1153
+- Stellar's storage model can super annoying.
+- Fees on testnet and mainnet are different, which is a bit annoying.
