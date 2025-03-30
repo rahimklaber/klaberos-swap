@@ -12,8 +12,8 @@ import { priceFromBin } from "../src/math"
 import { basicNodeSigner } from "@stellar/stellar-sdk/contract"
 
 let client = new rpc.Server("https://soroban-testnet.stellar.org")
-let keypair = Keypair.fromSecret("SBR2NN7MTZD62KRPVI56TEYYDHIKKP66G4IZEBRL2TXG4RNNCMFNRH74")
-let keypair2 = Keypair.fromSecret("SCL7HCYASI2CSHC6474BJYIQGR5NH2DDFHTUNXROBKYYL2EJW6F2WIJB")
+let keypair = Keypair.fromSecret("")
+let keypair2 = Keypair.fromSecret("")
 
 let wasm: Uint8Array = await Bun.file("../concentraded-amm/target/wasm32-unknown-unknown/release/amm.wasm").bytes()
 let account = await client.getAccount(keypair.publicKey())

@@ -58,8 +58,8 @@ export interface Bin {
 
 /**
  * bin_id_or_offset is either the bin id or the offset from the current active bin
- * amount specifies the token amount. The tokens depends on which side of the active been is
- * being deposited. If the bin is the active bin, then the tokens is split based on the
+ * amount specifies the token amount or the amount of shares, depending on the value of `is_remove`
+ * I didn't like how the DepositArgs showed up in stellar expert, so I changed it from a sum type to a struct
  */
 export interface DepositArgs {
   amount: i128;
@@ -103,31 +103,17 @@ export const Errors = {
 
 export interface Client {
   /**
-   * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  upgrade: ({wasm_hash}: {wasm_hash: Buffer}, options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<null>>
-
-  /**
    * Construct and simulate a modify_liquidity transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Allows `from` to create or modify an existing position.
-   * `offset_from_active` specifies if the `bin_id_or_offset` param of `ActionsArgs` is a pointer to the bin or if it is offset from the current active bin.
+   * `offset_from_active` specifies if the `bin_id_or_offset` param of `DepositArgs` is a pointer to the bin or if it is offset from the current active bin.
+   * 
+   * NOTE: `args` must be ordered by bin_id ascending order
+   * 
+   * The position specified by `position_id` wil be modified or created if not exists.
+   * An account can have multiple positions.
    * 
    * returns a pair with the amounts deposited removed or added: (x_token_amount, y_token_amount)
+   * a positive number means that we deposited that amount and a negative number means that we withdrew that amount.
    */
   modify_liquidity: ({from, position_id, args, offset_from_active}: {from: string, position_id: i32, args: Array<DepositArgs>, offset_from_active: boolean}, options?: {
     /**
@@ -168,6 +154,11 @@ export interface Client {
 
   /**
    * Construct and simulate a get_bin_vec transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Bins are grouped together in a `BinVec` of size `BIN_VEC_SIZE`
+   * 
+   * the `get_vec_id_for_bin` can be used to convert a bin_id to a vec_id
+   * 
+   * This function will return the group of bins specified by the `vec_id`
    */
   get_bin_vec: ({vec_id}: {vec_id: i32}, options?: {
     /**
@@ -188,6 +179,12 @@ export interface Client {
 
   /**
    * Construct and simulate a get_shares_vec transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Each Bin is treated as a separate "vault" and has its own shares.
+   * 
+   * 
+   * the `get_vec_id_for_bin` can be used to convert a bin_id to a vec_id
+   * 
+   * This function will return the group of bin shares specified by the `vec_id`
    */
   get_shares_vec: ({vec_id}: {vec_id: i32}, options?: {
     /**
@@ -208,6 +205,9 @@ export interface Client {
 
   /**
    * Construct and simulate a get_position transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * returns the `Position` for a given position id for a user
+   * 
+   * Each user can have multiple positions.
    */
   get_position: ({from, position_id}: {from: string, position_id: i32}, options?: {
     /**
@@ -267,17 +267,16 @@ export class Client extends ContractClient {
   constructor(public readonly options: ContractClientOptions) {
     super(
       new ContractSpec([ "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAEAAAAAAAAABGNvbmYAAAfQAAAABkNvbmZpZwAAAAAAAA==",
-        "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAAl3YXNtX2hhc2gAAAAAAAPuAAAAIAAAAAA=",
-        "AAAAAAAAAS1BbGxvd3MgYGZyb21gIHRvIGNyZWF0ZSBvciBtb2RpZnkgYW4gZXhpc3RpbmcgcG9zaXRpb24uCmBvZmZzZXRfZnJvbV9hY3RpdmVgIHNwZWNpZmllcyBpZiB0aGUgYGJpbl9pZF9vcl9vZmZzZXRgIHBhcmFtIG9mIGBBY3Rpb25zQXJnc2AgaXMgYSBwb2ludGVyIHRvIHRoZSBiaW4gb3IgaWYgaXQgaXMgb2Zmc2V0IGZyb20gdGhlIGN1cnJlbnQgYWN0aXZlIGJpbi4KCnJldHVybnMgYSBwYWlyIHdpdGggdGhlIGFtb3VudHMgZGVwb3NpdGVkIHJlbW92ZWQgb3IgYWRkZWQ6ICh4X3Rva2VuX2Ftb3VudCwgeV90b2tlbl9hbW91bnQpAAAAAAAAEG1vZGlmeV9saXF1aWRpdHkAAAAEAAAAAAAAAARmcm9tAAAAEwAAAAAAAAALcG9zaXRpb25faWQAAAAABQAAAAAAAAAEYXJncwAAA+oAAAfQAAAAC0RlcG9zaXRBcmdzAAAAAAAAAAASb2Zmc2V0X2Zyb21fYWN0aXZlAAAAAAABAAAAAQAAA+0AAAACAAAACwAAAAs=",
+        "AAAAAAAAAlBBbGxvd3MgYGZyb21gIHRvIGNyZWF0ZSBvciBtb2RpZnkgYW4gZXhpc3RpbmcgcG9zaXRpb24uCmBvZmZzZXRfZnJvbV9hY3RpdmVgIHNwZWNpZmllcyBpZiB0aGUgYGJpbl9pZF9vcl9vZmZzZXRgIHBhcmFtIG9mIGBEZXBvc2l0QXJnc2AgaXMgYSBwb2ludGVyIHRvIHRoZSBiaW4gb3IgaWYgaXQgaXMgb2Zmc2V0IGZyb20gdGhlIGN1cnJlbnQgYWN0aXZlIGJpbi4KCk5PVEU6IGBhcmdzYCBtdXN0IGJlIG9yZGVyZWQgYnkgYmluX2lkIGFzY2VuZGluZyBvcmRlcgoKVGhlIHBvc2l0aW9uIHNwZWNpZmllZCBieSBgcG9zaXRpb25faWRgIHdpbCBiZSBtb2RpZmllZCBvciBjcmVhdGVkIGlmIG5vdCBleGlzdHMuCkFuIGFjY291bnQgY2FuIGhhdmUgbXVsdGlwbGUgcG9zaXRpb25zLgoKcmV0dXJucyBhIHBhaXIgd2l0aCB0aGUgYW1vdW50cyBkZXBvc2l0ZWQgcmVtb3ZlZCBvciBhZGRlZDogKHhfdG9rZW5fYW1vdW50LCB5X3Rva2VuX2Ftb3VudCkKYSBwb3NpdGl2ZSBudW1iZXIgbWVhbnMgdGhhdCB3ZSBkZXBvc2l0ZWQgdGhhdCBhbW91bnQgYW5kIGEgbmVnYXRpdmUgbnVtYmVyIG1lYW5zIHRoYXQgd2Ugd2l0aGRyZXcgdGhhdCBhbW91bnQuAAAAEG1vZGlmeV9saXF1aWRpdHkAAAAEAAAAAAAAAARmcm9tAAAAEwAAAAAAAAALcG9zaXRpb25faWQAAAAABQAAAAAAAAAEYXJncwAAA+oAAAfQAAAAC0RlcG9zaXRBcmdzAAAAAAAAAAASb2Zmc2V0X2Zyb21fYWN0aXZlAAAAAAABAAAAAQAAA+0AAAACAAAACwAAAAs=",
         "AAAAAAAAAAAAAAAUc3dhcF9leGFjdF9hbW91bnRfaW4AAAAEAAAAAAAAAARmcm9tAAAAEwAAAAAAAAAJYW1vdW50X2luAAAAAAAACwAAAAAAAAAObWluX2Ftb3VudF9vdXQAAAAAAAsAAAAAAAAACGluX3Rva2VuAAAAEwAAAAEAAAAL",
-        "AAAAAAAAAAAAAAALZ2V0X2Jpbl92ZWMAAAAAAQAAAAAAAAAGdmVjX2lkAAAAAAAFAAAAAQAAA+oAAAfQAAAAA0JpbgA=",
-        "AAAAAAAAAAAAAAAOZ2V0X3NoYXJlc192ZWMAAAAAAAEAAAAAAAAABnZlY19pZAAAAAAABQAAAAEAAAPqAAAH0AAAAAlCaW5TaGFyZXMAAAA=",
-        "AAAAAAAAAAAAAAAMZ2V0X3Bvc2l0aW9uAAAAAgAAAAAAAAAEZnJvbQAAABMAAAAAAAAAC3Bvc2l0aW9uX2lkAAAAAAUAAAABAAAD6AAAB9AAAAAIUG9zaXRpb24=",
+        "AAAAAAAAAMtCaW5zIGFyZSBncm91cGVkIHRvZ2V0aGVyIGluIGEgYEJpblZlY2Agb2Ygc2l6ZSBgQklOX1ZFQ19TSVpFYAoKdGhlIGBnZXRfdmVjX2lkX2Zvcl9iaW5gIGNhbiBiZSB1c2VkIHRvIGNvbnZlcnQgYSBiaW5faWQgdG8gYSB2ZWNfaWQKClRoaXMgZnVuY3Rpb24gd2lsbCByZXR1cm4gdGhlIGdyb3VwIG9mIGJpbnMgc3BlY2lmaWVkIGJ5IHRoZSBgdmVjX2lkYAAAAAALZ2V0X2Jpbl92ZWMAAAAAAQAAAAAAAAAGdmVjX2lkAAAAAAAFAAAAAQAAA+oAAAfQAAAAA0JpbgA=",
+        "AAAAAAAAANVFYWNoIEJpbiBpcyB0cmVhdGVkIGFzIGEgc2VwYXJhdGUgInZhdWx0IiBhbmQgaGFzIGl0cyBvd24gc2hhcmVzLgoKCnRoZSBgZ2V0X3ZlY19pZF9mb3JfYmluYCBjYW4gYmUgdXNlZCB0byBjb252ZXJ0IGEgYmluX2lkIHRvIGEgdmVjX2lkCgpUaGlzIGZ1bmN0aW9uIHdpbGwgcmV0dXJuIHRoZSBncm91cCBvZiBiaW4gc2hhcmVzIHNwZWNpZmllZCBieSB0aGUgYHZlY19pZGAAAAAAAAAOZ2V0X3NoYXJlc192ZWMAAAAAAAEAAAAAAAAABnZlY19pZAAAAAAABQAAAAEAAAPqAAAH0AAAAAlCaW5TaGFyZXMAAAA=",
+        "AAAAAAAAAGFyZXR1cm5zIHRoZSBgUG9zaXRpb25gIGZvciBhIGdpdmVuIHBvc2l0aW9uIGlkIGZvciBhIHVzZXIKCkVhY2ggdXNlciBjYW4gaGF2ZSBtdWx0aXBsZSBwb3NpdGlvbnMuAAAAAAAADGdldF9wb3NpdGlvbgAAAAIAAAAAAAAABGZyb20AAAATAAAAAAAAAAtwb3NpdGlvbl9pZAAAAAAFAAAAAQAAA+gAAAfQAAAACFBvc2l0aW9u",
         "AAAAAAAAAAAAAAAKZ2V0X2NvbmZpZwAAAAAAAAAAAAEAAAfQAAAABkNvbmZpZwAA",
         "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAABAAAAAAAAAAAAAAABkNvbmZpZwAAAAAAAQAAAAAAAAAGQmluVmVjAAAAAAABAAAABQAAAAEAAAAAAAAAC0JpblNoYXJlVmVjAAAAAAEAAAAFAAAAAQAAAAAAAAAIUG9zaXRpb24AAAACAAAAEwAAAAU=",
         "AAAAAQAAABVzdG9yZWQgYXMgdmVjW3NoYXJlc10AAAAAAAAAAAAACUJpblNoYXJlcwAAAAAAAAIAAAAAAAAABmJpbl9pZAAAAAAABQAAAAAAAAAGc2hhcmVzAAAAAAAL",
         "AAAAAQAAAHdzdG9yZWQgYXMgdmVjW3Jlc2VydmVfeHxyZXNlcnZlX3ldIGlmIG5vdCBhY3RpdmUgYmluCm90aGVyd2lzZSBpZiBhY3RpdmVfYmluLCBpdCBpcyBzdG9yZWQgYXMgdmVjW3Jlc2VydmVfeCwgcmVzZXJ2ZV95XQAAAAAAAAAAA0JpbgAAAAADAAAAAAAAAAZiaW5faWQAAAAAAAUAAAAAAAAACXJlc2VydmVfeAAAAAAAAAsAAAAAAAAACXJlc2VydmVfeQAAAAAAAAs=",
-        "AAAAAQAAAP5iaW5faWRfb3Jfb2Zmc2V0IGlzIGVpdGhlciB0aGUgYmluIGlkIG9yIHRoZSBvZmZzZXQgZnJvbSB0aGUgY3VycmVudCBhY3RpdmUgYmluCmFtb3VudCBzcGVjaWZpZXMgdGhlIHRva2VuIGFtb3VudC4gVGhlIHRva2VucyBkZXBlbmRzIG9uIHdoaWNoIHNpZGUgb2YgdGhlIGFjdGl2ZSBiZWVuIGlzCmJlaW5nIGRlcG9zaXRlZC4gSWYgdGhlIGJpbiBpcyB0aGUgYWN0aXZlIGJpbiwgdGhlbiB0aGUgdG9rZW5zIGlzIHNwbGl0IGJhc2VkIG9uIHRoZQAAAAAAAAAAAAtEZXBvc2l0QXJncwAAAAADAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAAAAAAEGJpbl9pZF9vcl9vZmZzZXQAAAAFAAAAAAAAAAlpc19yZW1vdmUAAAAAAAAB",
+        "AAAAAQAAARtiaW5faWRfb3Jfb2Zmc2V0IGlzIGVpdGhlciB0aGUgYmluIGlkIG9yIHRoZSBvZmZzZXQgZnJvbSB0aGUgY3VycmVudCBhY3RpdmUgYmluCmFtb3VudCBzcGVjaWZpZXMgdGhlIHRva2VuIGFtb3VudCBvciB0aGUgYW1vdW50IG9mIHNoYXJlcywgZGVwZW5kaW5nIG9uIHRoZSB2YWx1ZSBvZiBgaXNfcmVtb3ZlYApJIGRpZG4ndCBsaWtlIGhvdyB0aGUgRGVwb3NpdEFyZ3Mgc2hvd2VkIHVwIGluIHN0ZWxsYXIgZXhwZXJ0LCBzbyBJIGNoYW5nZWQgaXQgZnJvbSBhIHN1bSB0eXBlIHRvIGEgc3RydWN0AAAAAAAAAAALRGVwb3NpdEFyZ3MAAAAAAwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAAAAABBiaW5faWRfb3Jfb2Zmc2V0AAAABQAAAAAAAAAJaXNfcmVtb3ZlAAAAAAAAAQ==",
         "AAAAAQAAAAAAAAAAAAAABkNvbmZpZwAAAAAABQAAAAAAAAAKYWN0aXZlX2JpbgAAAAAABQAAAAAAAAAIYmluX3N0ZXAAAAAEAAAAAAAAAANmZWUAAAAABAAAAAAAAAAHdG9rZW5feAAAAAATAAAAAAAAAAd0b2tlbl95AAAAABM=",
         "AAAAAQAAAAAAAAAAAAAACFBvc2l0aW9uAAAAAQAAAAAAAAAKYmluX3NoYXJlcwAAAAAD6gAAB9AAAAAJQmluU2hhcmVzAAAA",
         "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAACQAAAAAAAAALRXJyTmVnYXRpdmUAAAAAAgAAAAAAAAANRXJyTWF0aEFwcHJveAAAAAAAABIAAAAAAAAADkVyckFkZE92ZXJmbG93AAAAAAAeAAAAAAAAAA9FcnJTdWJVbmRlcmZsb3cAAAAAHwAAAAAAAAAORXJyRGl2SW50ZXJuYWwAAAAAACAAAAAAAAAADkVyck11bE92ZXJmbG93AAAAAAAhAAAAAAAAABFFcnJDUG93QmFzZVRvb0xvdwAAAAAAACIAAAAAAAAAEkVyckNQb3dCYXNlVG9vSGlnaAAAAAAAIwAAAAAAAAARRXJyTmVnYXRpdmVPclplcm8AAAAAAAAl" ]),
@@ -285,8 +284,7 @@ export class Client extends ContractClient {
     )
   }
   public readonly fromJSON = {
-    upgrade: this.txFromJSON<null>,
-        modify_liquidity: this.txFromJSON<readonly [i128, i128]>,
+    modify_liquidity: this.txFromJSON<readonly [i128, i128]>,
         swap_exact_amount_in: this.txFromJSON<i128>,
         get_bin_vec: this.txFromJSON<Array<Bin>>,
         get_shares_vec: this.txFromJSON<Array<BinShares>>,

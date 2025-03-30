@@ -95,7 +95,6 @@ fn things_work() {
     ];
 
     let amounts = client.modify_liquidity(&user_1, &0,  &modify_args, &false);
-    dbg!(&amounts);
     // we swapped so we got a small amount of fees
     assert!((amounts.0 + amounts.1) < -20_000_000_0);
 }

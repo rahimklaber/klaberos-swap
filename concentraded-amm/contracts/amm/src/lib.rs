@@ -7,9 +7,7 @@ use crate::shares::calculate_shares_to_mint;
 use crate::storage::{get_bin_vec_or_default, get_config, get_position, get_position_or_default, get_shares_vec_or_default, get_vec_id_for_bin, store_bin_vec, store_config, store_position, store_shares_vec, Bin, BinShares, Config, DataKey, DepositArgs, Position};
 use crate::token::transfer;
 use soroban_fixed_point_math::SorobanFixedPoint;
-// use soroban_sdk::testutils::arbitrary::std::dbg;
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Vec, I256};
-use soroban_sdk::testutils::arbitrary::std::dbg;
 
 #[contract]
 pub struct Contract;
@@ -21,12 +19,17 @@ impl Contract {
         env.storage().instance().set(&DataKey::Config, &conf);
     }
 
-    pub fn upgrade(env: Env, wasm_hash: BytesN<32>){
-        env.deployer().update_current_contract_wasm(wasm_hash);
-    }
+    // pub fn upgrade(env: Env, wasm_hash: BytesN<32>){
+    //     env.deployer().update_current_contract_wasm(wasm_hash);
+    // }
 
     /// Allows `from` to create or modify an existing position.
-    /// `offset_from_active` specifies if the `bin_id_or_offset` param of `ActionsArgs` is a pointer to the bin or if it is offset from the current active bin.
+    /// `offset_from_active` specifies if the `bin_id_or_offset` param of `DepositArgs` is a pointer to the bin or if it is offset from the current active bin.
+    ///
+    /// NOTE: `args` must be ordered by bin_id ascending order
+    ///
+    /// The position specified by `position_id` wil be modified or created if not exists.
+    /// An account can have multiple positions.
     ///
     /// returns a pair with the amounts deposited removed or added: (x_token_amount, y_token_amount)
     /// a positive number means that we deposited that amount and a negative number means that we withdrew that amount.
@@ -216,7 +219,6 @@ impl Contract {
         (x_amount_delta, y_amount_delta)
     }
 
-
     pub fn swap_exact_amount_in(env: Env, from: Address, amount_in: i128, min_amount_out: i128, in_token: Address) -> i128 {
         from.require_auth();
         let config = get_config(&env);
@@ -255,7 +257,6 @@ impl Contract {
         let mut amount_in_remaining = amount_in_scaled.clone();
         let mut amount_out = I256::from_i128(&env, 0);
 
-        // loop through the vecs
         loop {
 
             //TODO: handle when next vec has no liquidity
@@ -311,6 +312,7 @@ impl Contract {
 
                 // TODO: reduce code duplication
 
+                // here we swap using the current bin
                 if is_x_in {
                     let scaled_reserve = upscale(&env, bin.reserve_y, BONE);
 
@@ -401,14 +403,28 @@ impl Contract {
         downscaled_out
     }
 
+    /// Bins are grouped together in a `BinVec` of size `BIN_VEC_SIZE`
+    ///
+    /// the `get_vec_id_for_bin` can be used to convert a bin_id to a vec_id
+    ///
+    /// This function will return the group of bins specified by the `vec_id`
     pub fn get_bin_vec(env: Env, vec_id: i32) -> Vec<Bin> {
         get_bin_vec_or_default(&env, vec_id, get_config(&env).active_bin)
     }
 
+    /// Each Bin is treated as a separate "vault" and has its own shares.
+    ///
+    ///
+    /// the `get_vec_id_for_bin` can be used to convert a bin_id to a vec_id
+    ///
+    /// This function will return the group of bin shares specified by the `vec_id`
     pub fn get_shares_vec(env: Env, vec_id: i32) -> Vec<BinShares> {
         get_shares_vec_or_default(&env, vec_id)
     }
 
+    /// returns the `Position` for a given position id for a user
+    ///
+    /// Each user can have multiple positions.
     pub fn get_position(env: Env, from: Address, position_id: i32) -> Option<Position> {
         get_position(&env, DataKey::Position(from.clone(), position_id))
     }
