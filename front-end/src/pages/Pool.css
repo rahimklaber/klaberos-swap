@@ -1,0 +1,216 @@
+.pool-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pool-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    width: 360px;
+    flex-wrap: wrap;
+    gap: 8px; /* Add gap between tab buttons */
+}
+
+.pool-tabs button {
+    flex: 1;
+    min-width: 110px; /* Slightly reduce minimum width to fit with gaps */
+    padding: 12px;
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 8px; /* Make all corners rounded since we're using gaps */
+    position: relative;
+    overflow: hidden;
+}
+
+.pool-tabs button.active {
+    background: #eebf4e;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(238, 191, 78, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Remove the white highlight at the bottom */
+.pool-tabs button.active::after {
+    display: none;
+}
+
+/* Remove the separate border radius for first and last child since we're using gaps */
+.pool-tabs button:first-child,
+.pool-tabs button:last-child {
+    border-radius: 8px;
+}
+
+/* Add media query for desktop */
+@media screen and (min-width: 768px) {
+    .pool-tabs {
+        width: 600px;
+        gap: 12px; /* Larger gap for desktop */
+    }
+    
+    .pool-header h2 {
+        font-size: 32px;
+    }
+    
+    .config-display {
+        max-width: 1000px;
+    }
+    
+    .pool-tabs button {
+        font-size: 18px;
+        padding: 16px;
+    }
+    
+    .config-toggle-button {
+        padding: 12px 18px;
+        font-size: 16px;
+    }
+}
+
+/* Even larger for very large screens */
+@media screen and (min-width: 1200px) {
+    .pool-tabs {
+        width: 700px;
+        gap: 16px; /* Even larger gap for very large screens */
+    }
+}
+
+.pool-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+@media (prefers-color-scheme: light) {
+    .pool-tabs button {
+        background: #f0f0f0;
+        color: #333;
+    }
+    
+    .pool-tabs button.active {
+        background: #eebf4e;
+        color: white;
+        box-shadow: 0 4px 8px rgba(238, 191, 78, 0.3);
+    }
+}
+
+.simple-loader {
+    text-align: center;
+    padding: 40px 0;
+    font-size: 18px;
+    color: var(--color);
+}
+
+.dots {
+    display: inline-block;
+    animation: blinkDots 1.5s infinite step-start;
+}
+
+@keyframes blinkDots {
+    0%, 100% { opacity: 0; }
+    25% { opacity: 0.25; }
+    50% { opacity: 0.5; }
+    75% { opacity: 1; }
+}
+
+.pool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 700px;
+}
+
+.pool-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.token-pair-display {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.token-pair-display h2 {
+    margin: 0;
+}
+
+.token-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.token-icon-overlap {
+    margin-left: -8px;
+    margin-right: 8px;
+}
+
+.contract-id {
+    font-size: 14px;
+    color: #888;
+}
+
+.contract-address {
+    font-family: monospace;
+}
+
+.config-toggle-button {
+    padding: 8px 12px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.config-toggle-button:hover {
+    background: #444;
+}
+
+.config-display {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    overflow: auto;
+}
+
+.config-display h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.config-display pre {
+    margin: 0;
+    font-family: monospace;
+    font-size: 14px;
+    overflow: auto;
+    max-height: 300px;
+}
+
+@media (prefers-color-scheme: light) {
+    .config-toggle-button {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .config-toggle-button:hover {
+        background: #e0e0e0;
+    }
+}

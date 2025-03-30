@@ -1,0 +1,291 @@
+.swap-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    overflow: hidden;
+}
+
+.swap-box {
+    background: var(--swap-box-background-color, #2e2e2e); /* Different tone than the background color */
+    border-radius: 16px;
+    padding: 24px; /* Ensure padding is the same all around */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    text-align: center;
+}
+
+/* Add media query for desktop */
+@media screen and (min-width: 768px) {
+    .swap-box {
+        width: 600px;
+        padding: 40px;
+    }
+    
+    .swap-input {
+        padding: 16px;
+    }
+    
+    .swap-input input {
+        font-size: 24px;
+        width: 200px;
+    }
+    
+    .swap-label {
+        font-size: 16px;
+    }
+    
+    .swap-currency img {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .currency-text {
+        font-size: 18px;
+    }
+    
+    .swap-button {
+        padding: 16px;
+        font-size: 18px;
+    }
+    
+    .swap-info {
+        font-size: 16px;
+    }
+}
+
+/* Even larger for very large screens */
+@media screen and (min-width: 1200px) {
+    .swap-box {
+        width: 700px;
+    }
+}
+
+.swap-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--color);
+}
+
+.swap-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.swap-label {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.swap-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--input-background-color, #3e3e3e); /* Different tone than the SwapBox background */
+    border-radius: 8px;
+    padding: 8px; /* Adjusted padding */
+    width: 95%;
+}
+
+.swap-input input {
+    border: none;
+    background: transparent;
+    font-size: 18px; /* Adjusted font size */
+    width: 120px; /* Adjusted width */
+    text-align: left;
+    outline: none;
+    color: var(--color);
+    caret-color: var(--color);
+    -moz-appearance: textfield;
+}
+
+.swap-input input:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    color: var(--color);
+}
+
+.swap-input input::-webkit-outer-spin-button,
+.swap-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.swap-input select {
+    border: none;
+    background: transparent;
+    font-size: 18px; /* Adjusted font size */
+    margin-left: 8px;
+    outline: none;
+    color: var(--color);
+    caret-color: var(--color);
+}
+
+.swap-currency {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.swap-currency img {
+    width: 24px;
+    height: 24px;
+    margin-right: 4px;
+}
+
+.currency-text {
+    color: var(--color);
+}
+
+.swap-value {
+    font-size: 14px;
+    color: #888;
+}
+
+.swap-icon {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+}
+
+.swap-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.swap-button {
+    width: 100%;
+    padding: 12px;
+    background: #eebf4e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.swap-button:hover {
+    background: #d4a33e;
+}
+
+.swap-info {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+}
+
+.currency-picker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.currency-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.currency-picker-content {
+    position: relative;
+    background: var(--background-color);
+    border-radius: 8px;
+    padding: 16px;
+    width: 300px;
+    z-index: 1001;
+}
+
+.currency-picker-content input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: var(--color);
+}
+
+.currency-picker-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.currency-picker-content li {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--color);
+}
+
+.currency-picker-content li img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+.currency-picker-content li:hover {
+    background: #f0f0f0;
+}
+
+.calculating-indicator {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Removing swap direction toggle styles */
+.swap-direction-toggle, 
+.swap-direction-icon {
+    display: none;
+}
+
+@media (prefers-color-scheme: light) {
+    .swap-box {
+        background: #f5f5f5; /* Different tone than the background color */
+    }
+
+    .swap-input {
+        background: #ffffff; /* Different tone than the SwapBox background */
+    }
+
+    .swap-input input, .swap-input select, .currency-text, .currency-picker-content input, .currency-picker-content li {
+        color: #213547;
+    }
+
+    .swap-direction-toggle {
+        background: #f0f0f0;
+    }
+    
+    .swap-direction-icon {
+        color: #333;
+    }
+}
+
+/* Media query for desktop for the swap icon */
+@media screen and (min-width: 768px) {
+    .swap-direction-toggle {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .swap-direction-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+}

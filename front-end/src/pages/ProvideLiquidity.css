@@ -1,0 +1,597 @@
+.provide-liquidity-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: var(--swap-box-background-color, #2e2e2e); /* Same as swap widget */
+    color: var(--color);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    margin: 0 auto;
+}
+
+.shape-picker {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.shape-picker label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.shape-picker input {
+    margin-right: 8px;
+}
+
+.price-range-picker {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.slider-container {
+    position: relative;
+    height: 24px;
+}
+
+.slider-container input[type="range"] {
+    position: absolute;
+    width: 100%;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    z-index: 3; /* Ensure the slider circle is in front of the line */
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    pointer-events: all;
+    width: 16px;
+    height: 16px;
+    background: #eebf4e;
+    border-radius: 50%;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.slider-container input[type="range"]::-moz-range-thumb {
+    pointer-events: all;
+    width: 16px;
+    height: 16px;
+    background: #eebf4e;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #888;
+    z-index: 1;
+    transform: translateY(-50%);
+}
+
+.slider-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: calc((var(--min) - var(--range-min)) / (var(--range-max) - var(--range-min)) * 100%);
+    right: calc(100% - (var(--max) - var(--range-min)) / (var(--range-max) - var(--range-min)) * 100%);
+    height: 4px;
+    background: #eebf4e;
+    z-index: 2;
+    transform: translateY(-50%);
+}
+
+.price-range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    width: 100%;
+}
+
+.price-range-values > div {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 8px;
+    min-width: 160px;
+}
+
+.price-range-values > div > div:first-child {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.provide-liquidity-button {
+    padding: 12px;
+    background: #eebf4e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.provide-liquidity-button:hover {
+    background: #d4a33e;
+}
+
+.token-inputs {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.token-input-group {
+    margin-bottom: 12px;
+}
+
+.token-input-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #888;
+}
+
+.token-input {
+    display: flex;
+    align-items: center;
+    background: var(--input-background-color, #3e3e3e);
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.token-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    color: var(--color);
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.token-input input::-webkit-outer-spin-button,
+.token-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.token-symbol {
+    font-size: 16px;
+    color: var(--color);
+    font-weight: bold;
+}
+
+.token-display {
+    display: flex;
+    align-items: center;
+}
+
+.token-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    border-radius: 50%;
+}
+
+@media (prefers-color-scheme: light) {
+    .provide-liquidity-container {
+        background: #f5f5f5; /* Same as swap widget in light mode */
+        color: #213547;
+    }
+    
+    .price-range-values > div {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .token-input {
+        background: #ffffff;
+    }
+    
+    .token-input input, .token-symbol {
+        color: #213547;
+    }
+}
+
+.simple-loader {
+    text-align: center;
+    padding: 40px 0;
+    font-size: 18px;
+    color: var(--color);
+}
+
+.dots {
+    display: inline-block;
+    animation: blinkDots 1.5s infinite step-start;
+}
+
+@keyframes blinkDots {
+    0%, 100% { opacity: 0; }
+    25% { opacity: 0.25; }
+    50% { opacity: 0.5; }
+    75% { opacity: 1; }
+}
+
+/* Remove the complex terminal loader styles */
+.terminal-loader,
+.terminal-header,
+.terminal-title,
+.terminal-buttons,
+.terminal-body,
+.terminal-text,
+.terminal-cursor {
+    display: none;
+}
+
+.price-range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.active-bin-info {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.active-bin-link {
+    font-size: 14px;
+    color: #eebf4e;
+    background: rgba(238, 191, 78, 0.1);
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.active-bin-link:hover {
+    background: rgba(238, 191, 78, 0.2);
+}
+
+.active-bin-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px; /* Make it slightly wider to be more visible */
+    background-color: #eebf4e;
+    z-index: 4;
+    /* Fix calculation to properly center the marker */
+    left: calc((var(--active-bin) - var(--range-min)) / (var(--range-max) - var(--range-min)) * 100%);
+    transform: translateX(-50%); /* Center the marker on its exact position */
+    box-shadow: 0 0 4px rgba(238, 191, 78, 0.5); /* Add a subtle glow effect */
+}
+
+.disabled-option {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.disabled-option input {
+    cursor: not-allowed;
+}
+
+.disabled-option small {
+    font-size: 10px;
+    font-style: italic;
+    color: #999;
+    margin-left: 4px;
+}
+
+/* Remove the position toggle styles */
+.position-selector,
+.position-toggle {
+    display: none;
+}
+
+.position-id-input {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.position-id-input label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #888;
+}
+
+.position-id-input input {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    background: var(--input-background-color, #3e3e3e);
+    color: var(--color);
+    font-size: 16px;
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.position-id-input input::-webkit-outer-spin-button,
+.position-id-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .position-id-input input {
+        background: #ffffff;
+        color: #213547;
+    }
+}
+
+.bin-distribution-container {
+    width: 100%;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.bin-distribution-container h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.bin-distribution-graph {
+    display: flex;
+    align-items: flex-end;
+    height: 120px;
+    width: 100%;
+    padding: 0 4px;
+    border-bottom: 1px solid #888;
+    position: relative;
+}
+
+.bin-bar {
+    flex: 1;
+    margin: 0 1px;
+    background-color: #666;
+    position: relative;
+}
+
+.bin-bar.active-bin {
+    background-color: #eebf4e;
+}
+
+.bin-bar:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.bin-bar:hover .bin-tooltip {
+    display: block;
+}
+
+.bin-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.bin-tooltip:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+}
+
+.bin-distribution-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    gap: 16px;
+}
+
+.bin-legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+.bin-legend-color {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    background-color: #666;
+}
+
+.bin-legend-color.active-bin {
+    background-color: #eebf4e;
+}
+
+@media (prefers-color-scheme: light) {
+    .bin-distribution-container {
+        background: rgba(0, 0, 0, 0.03);
+    }
+    
+    .bin-tooltip {
+        color: white;
+    }
+}
+
+/* Add media query for desktop */
+@media screen and (min-width: 768px) {
+    .provide-liquidity-container {
+        width: 480px;
+        padding: 32px;
+    }
+    
+    .bin-distribution-graph {
+        height: 160px;
+    }
+}
+
+/* Media query for desktop - making it even bigger */
+@media screen and (min-width: 768px) {
+    .provide-liquidity-container {
+        width: 600px;
+        padding: 40px;
+    }
+    
+    .bin-distribution-graph {
+        height: 200px;
+    }
+    
+    .token-input input {
+        font-size: 20px;
+    }
+    
+    .token-symbol {
+        font-size: 18px;
+    }
+    
+    .token-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .price-range-values > div {
+        min-width: 220px;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .provide-liquidity-button {
+        padding: 16px;
+        font-size: 18px;
+    }
+}
+
+/* Even larger for very large screens */
+@media screen and (min-width: 1200px) {
+    .provide-liquidity-container {
+        width: 700px;
+    }
+}
+
+/* Add mobile-specific adjustments to fix overflow issues */
+@media screen and (max-width: 480px) {
+    .token-input {
+        padding: 8px 8px;
+    }
+    
+    .token-input input {
+        width: 100px; /* Limit input width on mobile */
+        font-size: 16px; /* Slightly smaller font size */
+    }
+    
+    .token-symbol {
+        font-size: 14px; /* Smaller font for token symbol */
+        max-width: 60px; /* Limit token text width */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .token-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+    }
+    
+    .token-display {
+        min-width: 50px; /* Ensure minimum space for token display */
+    }
+    
+    /* Adjust other components in mobile view */
+    .provide-liquidity-container {
+        padding: 16px;
+    }
+    
+    .price-range-values > div {
+        min-width: auto;
+        flex: 1;
+        font-size: 12px;
+        padding: 6px;
+    }
+    
+    .bin-distribution-graph {
+        height: 100px;
+    }
+    
+    .bin-tooltip {
+        font-size: 10px;
+        padding: 4px;
+    }
+}
+
+.bin-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.bin-input-group span {
+    font-weight: bold;
+}
+
+.bin-input-group input {
+    width: 70px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    background: var(--input-background-color, #3e3e3e);
+    color: var(--color);
+    font-size: 14px;
+    text-align: center;
+    -moz-appearance: textfield;
+}
+
+.bin-input-group input::-webkit-outer-spin-button,
+.bin-input-group input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .bin-input-group input {
+        background: #ffffff;
+        color: #213547;
+    }
+}
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 480px) {
+    /* ...existing mobile code... */
+    
+    .bin-input-group input {
+        width: 50px;
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+}

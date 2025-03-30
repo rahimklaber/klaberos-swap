@@ -1,0 +1,1 @@
+pub const BIN_VEC_SIZE: i32 = 75i32;

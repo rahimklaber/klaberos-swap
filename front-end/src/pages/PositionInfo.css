@@ -1,0 +1,291 @@
+.position-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: var(--swap-box-background-color, #2e2e2e);
+    color: var(--color);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    margin: 0 auto;
+}
+
+/* Add media query for desktop */
+@media screen and (min-width: 768px) {
+    .position-info-container {
+        width: 600px;
+        padding: 40px;
+    }
+    
+    .position-card {
+        padding: 24px;
+    }
+    
+    .position-id {
+        font-size: 18px;
+    }
+    
+    .token-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .detail {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .remove-liquidity-button {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .position-id-input-container input {
+        font-size: 18px;
+        padding: 12px 16px;
+    }
+    
+    .position-id-input-container button {
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+}
+
+/* Even larger for very large screens */
+@media screen and (min-width: 1200px) {
+    .position-info-container {
+        width: 700px;
+    }
+}
+
+.connect-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    text-align: center;
+}
+
+.connect-wallet-button {
+    padding: 12px 24px;
+    background: #eebf4e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.connect-wallet-button:hover {
+    background: #d4a33e;
+}
+
+.no-positions {
+    text-align: center;
+    padding: 24px 0;
+    color: #888;
+}
+
+.positions-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.position-card {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    width: 100%;
+}
+
+.position-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.position-id {
+    font-weight: bold;
+    color: #eebf4e;
+}
+
+.token-pair {
+    display: flex;
+    align-items: center;
+}
+
+.token-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.token-icon-overlap {
+    margin-left: -8px;
+    margin-right: 4px;
+}
+
+.position-details {
+    margin-bottom: 12px;
+}
+
+.detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    color: #888;
+}
+
+.detail-value {
+    font-weight: bold;
+}
+
+.position-actions {
+    margin-top: 12px;
+}
+
+.remove-liquidity-button {
+    width: 100%;
+    padding: 8px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.remove-liquidity-button:hover {
+    background: #d32f2f;
+}
+
+.remove-liquidity-button.disabled {
+    background: #888;
+    cursor: not-allowed;
+    opacity: 0.7;
+    position: relative;
+}
+
+.remove-liquidity-button.disabled:hover {
+    background: #888;
+}
+
+.position-id-form {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.position-id-input-container {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.position-id-input-container input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px 0 0 4px;
+    background: var(--input-background-color, #3e3e3e);
+    color: var(--color);
+    font-size: 16px;
+    outline: none;
+}
+
+.position-id-input-container button {
+    padding: 8px 16px;
+    background: #eebf4e;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.position-id-input-container button:hover {
+    background: #d4a33e;
+}
+
+.reset-button {
+    padding: 6px 12px;
+    background: transparent;
+    color: #888;
+    border: 1px solid #888;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    width: 100%;
+}
+
+.reset-button:hover {
+    background: rgba(136, 136, 136, 0.1);
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    margin-bottom: 16px;
+    padding: 8px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 4px;
+    width: 100%;
+}
+
+@media (prefers-color-scheme: light) {
+    .position-info-container {
+        background: #f5f5f5;
+        color: #213547;
+    }
+    
+    .position-card {
+        background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .position-id-input-container input {
+        background: #ffffff;
+        color: #213547;
+    }
+}
+
+.simple-loader {
+    text-align: center;
+    padding: 40px 0;
+    font-size: 18px;
+    color: var(--color);
+}
+
+.dots {
+    display: inline-block;
+    animation: blinkDots 1.5s infinite step-start;
+}
+
+@keyframes blinkDots {
+    0%, 100% { opacity: 0; }
+    25% { opacity: 0.25; }
+    50% { opacity: 0.5; }
+    75% { opacity: 1; }
+}
+
+.coming-soon-badge {
+    font-size: 10px;
+    background: #333;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+@media (prefers-color-scheme: light) {
+    .coming-soon-badge {
+        background: #666;
+        color: white;
+    }
+}
