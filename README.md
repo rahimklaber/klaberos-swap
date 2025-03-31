@@ -175,7 +175,13 @@ The swap function is similar to the modify function in away. The swap function a
 > 
 > The liquidity book handles this by keeping an index of bins that have liquidity. They do it in a [smart](https://docs.lfj.gg/concepts/bin-liquidity#liquidity-tracking) way.
 > I need to think about to implement this functionality. I could copy Trader joe, but their implentation might not suit soroban.
-> 
+
+## Possible improvements
+- Use errors for asserts
+- allow transferring of positions
+- handle the scenario where the next bin vec does not have any liquidity
+- optimize fees further
+- emit events
 
 ## Deployment
 - [setup soroban env](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup)
